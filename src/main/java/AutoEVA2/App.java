@@ -1,4 +1,4 @@
-package cl.micodev;
+package AutoEVA2;
 
 /**
  * Hello world!

@@ -1,4 +1,4 @@
-package cl.micodev.steps;
+package AutoEVA2.steps;
 // Imports de Selenium y WebDriverManager
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;

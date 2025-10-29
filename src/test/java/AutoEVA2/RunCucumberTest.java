@@ -1,4 +1,4 @@
-package cl.micodev;
+package AutoEVA2;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
@@ -9,7 +9,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "cl.micodev.steps")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "AutoEVA2.steps")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty,summary,html:target/cucumber-report.html")
 public class RunCucumberTest {
 }

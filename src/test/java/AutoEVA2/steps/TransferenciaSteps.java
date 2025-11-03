@@ -19,6 +19,10 @@ import org.junit.Assert;
 // Import para el tiempo de espera (Duration)
 import java.time.Duration;
 
+import static org.junit.Assert.assertEquals;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.support.ui.Select;
+
 public class TransferenciaSteps {
 
     // Hacemos el driver estático para que sea accesible entre pasos
@@ -92,12 +96,12 @@ public class TransferenciaSteps {
     @Then("la pagina debe contener el texto {string}")
     public void la_pagina_debe_contener_el_texto(String textoEsperado) {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        // Obtenemos todo el texto del cuerpo de la página
+        // Obtenemos tod0 el texto del cuerpo de la página
         String bodyText = driver.findElement(By.tagName("body")).getText();
 
         // Verificamos si el texto esperado está en la página
@@ -106,5 +110,49 @@ public class TransferenciaSteps {
                 bodyText.contains(textoEsperado)
         );
 
+    }
+    @Then("La pagina deve mostrar el aviso {string}")
+    public void la_pagina_deve_mostrar_el_aviso(String textoEsperado) {
+        String textoActual = closeAlertAndGetItsText(); //obtenemos el texto
+
+        assertEquals(textoEsperado, textoActual); //lo comparamos con texto esperado
+    }
+
+    @When("seleccionamos en el dropdown {string} el texto visible {string}")
+    public void seleccionamos_en_el_dropdown_el_texto_visible(String xpath, String textoVisible) {
+        // Encontramos el elemento Select (el dropdown)
+        Select dropdown = new Select(driver.findElement(By.xpath(xpath)));
+
+        // Seleccionamos la opción usando el texto visible
+        dropdown.selectByVisibleText(textoVisible);
+    }
+
+    private String closeAlertAndGetItsText() {
+        try {
+            // 1. Esperar un poco a que la alerta aparezca (Opcional pero recomendado)
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+
+            // 2. Cambiar el foco del driver a la alerta
+            Alert alert = driver.switchTo().alert();
+
+            // 3. Obtener el texto de la alerta
+            String alertText = alert.getText();
+
+            // 4. Aceptar la alerta (presionar OK)
+            alert.accept(); // O usa alert.dismiss() si quieres cancelarla
+
+            // 5. Devolver el texto que leíste
+            return alertText;
+
+        } catch (Exception e) {
+            // Manejar el caso de que no haya ninguna alerta
+            System.out.println("No se encontró ninguna alerta: " + e.getMessage());
+            return null;
+        }
     }
 }

@@ -13,19 +13,19 @@ Feature: Transferencias
     # 2. Seleccionar la cuenta origen
     And seleccionamos en el dropdown "//*[@id='fromAccount']" el texto visible "4539082039396288 Credit Card"
     # 3. Colocar el monto
-    And coloca en el campo usuario "//*[@id='transferAmount']" el texto "1001231230"
+    And coloca en el campo usuario "//*[@id='transferAmount']" el texto "100"
     # 4. Click en el botón de transferir
     And hacer click sobre el boton Login "//*[@id='transfer']"
     # 5. Verificar la confirmación de la transferencia
     # (El step revisa que el monto aparezca en la página de confirmación)
-    Then la pagina debe contener el texto "1001231230"
+    Then la pagina debe contener el texto "100"
     # 6. Regresar al Resumen de Cuentas (View Account Summary)
     When hacemos click en el link "//*[@id='MenuHyperLink1']"
     # 7. Ver los detalles de la cuenta (usando la selección por defecto)
     And hacer click sobre el boton Login "//*[@id='btnGetAccount']"
     # 8. Verificar que el monto transferido aparece en la tabla de transacciones recientes
     # (Reutilizamos el step para verificar el monto en la nueva página)
-    Then la pagina debe contener el texto "1001231230"
+    Then la pagina debe contener el texto "100"
 
 
   Scenario: Solicitar una tarjeta de crédito Visa Altoro Gold

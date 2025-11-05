@@ -9,6 +9,13 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.Alert; // Import para la Alerta
 import org.openqa.selenium.support.ui.Select; // Import para el Dropdown
 
+// === NUEVOS IMPORTS PARA ESPERAS EXPLÍCITAS ===
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.TimeoutException;
+import java.time.Duration; // (Ya deberías tenerlo)
+
+
 // === Imports de Cucumber ===
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -21,7 +28,7 @@ import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 
 // === Otros ===
-import java.time.Duration;
+// (java.time.Duration ya está arriba)
 
 public class TransferenciaSteps {
 
@@ -98,30 +105,46 @@ public class TransferenciaSteps {
         driver.findElement(By.xpath(xpath)).click();
     }
 
+    // ==========================================================
+    // MÉTODO ACTUALIZADO CON WebDriverWait
+    // ==========================================================
     @Then("la pagina debe contener el texto {string}")
     public void la_pagina_debe_contener_el_texto(String textoEsperado) {
-        // Agregamos una pequeña pausa de 1 seg solo para asegurar
-        // que el texto dinámico se refresque después de una acción.
+
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            // 1. Crear el Wait. Esperará MÁXIMO 10 segundos.
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+            // 2. Esperar a que el texto sea visible DENTRO del body
+            //    Esto reemplaza al Thread.sleep()
+            wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), textoEsperado));
+
+            // 3. Si el 'wait' termina sin error, el texto SÍ está.
+            //    Hacemos la aserción final para estar 100% seguros.
+            String bodyText = driver.findElement(By.tagName("body")).getText();
+            Assert.assertTrue(
+                    "Verificación fallida: El texto '" + textoEsperado + "' NO se encontró en la página.",
+                    bodyText.contains(textoEsperado)
+            );
+
+        } catch (TimeoutException e) {
+            // 4. Si el 'wait' falla (pasan 10s), el texto nunca apareció.
+            Assert.fail(
+                    "Verificación fallida: El texto '" + textoEsperado + "' NO se encontró en la página después de 10 seg."
+            );
         }
-
-        // La espera implícita esperará a que el "body" exista
-        String bodyText = driver.findElement(By.tagName("body")).getText();
-
-        // Verificamos si el texto esperado está en la página
-        Assert.assertTrue(
-                "Verificación fallida: El texto '" + textoEsperado + "' NO se encontró en la página.",
-                bodyText.contains(textoEsperado)
-        );
     }
 
+    // ==========================================================
+    // MÉTODO ACTUALIZADO CON WebDriverWait
+    // ==========================================================
     @Then("La pagina deve mostrar el aviso {string}")
     public void la_pagina_deve_mostrar_el_aviso(String textoEsperado) {
-        String textoActual = closeAlertAndGetItsText(); //obtenemos el texto
-        assertEquals(textoEsperado, textoActual); //lo comparamos con texto esperado
+        // Obtenemos el texto usando el método auxiliar mejorado
+        String textoActual = closeAlertAndGetItsText();
+
+        // Lo comparamos con texto esperado
+        assertEquals(textoEsperado, textoActual);
     }
 
     @When("seleccionamos en el dropdown {string} el texto visible {string}")
@@ -131,21 +154,30 @@ public class TransferenciaSteps {
         dropdown.selectByVisibleText(textoVisible);
     }
 
-    // ==================== MÉTODOS AUXILIARES ====================
-
+    // ==========================================================
+    // MÉTODO AUXILIAR ACTUALIZADO CON WebDriverWait
+    // ==========================================================
     private String closeAlertAndGetItsText() {
         try {
-            // Pausa "tonta" para esperar que la alerta aparezca
-            Thread.sleep(1000);
+            // 1. Crear un WebDriverWait.
+            // Esperará un MÁXIMO de 10 segundos.
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-            // Cambiar el foco del driver a la alerta
+            // 2. Esperar EXPLÍCITAMENTE a que la alerta aparezca.
+            // Esto reemplaza al Thread.sleep(1000)
+            // Si la alerta aparece en 0.5s, continúa inmediatamente.
+            // Si no aparece en 10s, lanzará una 'TimeoutException'.
+            wait.until(ExpectedConditions.alertIsPresent());
+
+            // 3. Ahora que SABEMOS que la alerta está presente, cambiamos a ella
             Alert alert = driver.switchTo().alert();
             String alertText = alert.getText();
             alert.accept();
             return alertText;
 
-        } catch (Exception e) {
-            Assert.fail("No se encontró ninguna alerta: " + e.getMessage());
+        } catch (TimeoutException e) {
+            // Esto se ejecuta si la alerta NUNCA apareció después de 10 seg
+            Assert.fail("No se encontró ninguna alerta después de esperar 10 segundos: " + e.getMessage());
             return null;
         }
     }

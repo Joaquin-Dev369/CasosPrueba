@@ -18,10 +18,26 @@ Feature: Transferencias
     And hacer click sobre el boton Login "//*[@id='btnGetAccount']"
     Then la pagina debe contener el texto "100"
 
-  Scenario: Solicitar una tarjeta de crédito Visa Altoro Gold
-    When hacemos click en el link "//a[text()='Here']"
-    And coloca en el campo password "//*[@name='passwd']" el texto "Demo1234"
-    And hacer click sobre el boton Login "//*[@name='Submit']"
+  Scenario: Realizar una transferencia a la misma cuenta
+    # La espera implícita de 10s esperará a que el link sea visible
+    When hacemos click en el link "//*[@id='MenuHyperLink3']"
+    And coloca en el campo usuario "//*[@id='transferAmount']" el texto "100"
+    And hacer click sobre el boton Login "//*[@id='transfer']"
+    Then la pagina debe contener el texto "From Account and To Account fields cannot be the same"
 
-    # (Este paso debe fallar, es el bug que encontramos)
-    Then la pagina debe contener el texto "Your application for a credit card has been received"
+  Scenario: Realizar una transferencia a la misma cuenta
+    # La espera implícita de 10s esperará a que el link sea visible
+    When hacemos click en el link "//*[@id='MenuHyperLink3']"
+    And seleccionamos en el dropdown "//*[@id='fromAccount']" el texto visible "4539082039396288 Credit Card"
+    And hacer click sobre el boton Login "//*[@id='transfer']"
+    Then la pagina debe contener el texto "Transfer Amount must be a number greater than 0."
+
+
+
+
+
+
+
+
+
+

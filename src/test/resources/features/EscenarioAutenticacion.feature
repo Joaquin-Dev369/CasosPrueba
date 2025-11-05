@@ -22,3 +22,13 @@ Feature: Autenticación de Usuario
   Scenario: Intento de inicio de sesión con campos vacíos
     And hacer click sobre el boton Login "//*[@name='btnSubmit']"
     Then La pagina deve mostrar el aviso "You must enter a valid username"
+
+
+  Scenario: Intento de inicio de sesión con usuario inexistente
+    When coloca en el campo usuario "//*[@id='uid']" el texto "usuarioinvalido"
+    And coloca en el campo password "//*[@id='passw']" el texto "passinvalido"
+    And hacer click sobre el boton Login "//*[@name='btnSubmit']"
+
+    # Verificamos que aparezca el mismo mensaje de error
+    Then la pagina debe contener el texto "Login Failed"
+    And la pagina debe contener el texto "username or password was not found in our system"

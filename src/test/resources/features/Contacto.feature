@@ -8,30 +8,22 @@ Feature: Formulario de Contacto
     And hacer click sobre el boton Login "//*[@name='btnSubmit']"
 
   Scenario: Enviar un comentario de feedback exitosamente
-    # 1. Hacemos clic en el link del menú
-    When hacemos click en el link "//*[@id='MenuHyperLink4']"
+    # 1. Clic en "Contact Us" (el link del HEADER que me diste)
+    When hacemos click en el link "//*[@id='HyperLink3']"
 
-    # 2. [ESPERA 1]
-    #    Forzamos al test a esperar a que la página de CONTACTO cargue.
-    #    Sabemos que cargó si contiene el texto "Email:".
-    Then la pagina debe contener el texto "Email:"
+    # 2. Clic en "online form" (el link que me diste)
+    #    La espera implícita de 10s esperará a que este link aparezca.
+    And hacemos click en el link "//a[@href='feedback.jsp']"
 
-    # 3. [ACCIÓN]
-    #    Ahora que la página cargó, hacemos clic en el link "online form"
-    And hacemos click en el link "//a[normalize-space(text())='online form']"
-
-    # 4. [ESPERA 2]
-    #    El clic anterior carga el FORMULARIO. Esperamos a que
-    #    cargue buscando el texto "Subject:".
+    # 3. ESPERA: Esperar a que el formulario cargue
     Then la pagina debe contener el texto "Subject:"
 
-    # 5. [ACCIÓN] Llenamos el formulario
+    # 4. ACCIÓN: Llenar el formulario
     And coloca en el campo usuario "//*[@name='name']" el texto "Usuario de Prueba"
     And coloca en el campo usuario "//*[@name='email_addr']" el texto "test@test.com"
     And coloca en el campo usuario "//*[@name='subject']" el texto "Asunto de Prueba"
     And coloca en el campo usuario "//*[@name='comments']" el texto "Comentario de prueba."
     And hacer click sobre el boton Login "//*[@name='submit']"
 
-    # 6. [VERIFICACIÓN FINAL]
-    #    Esperamos y verificamos el mensaje de éxito
-    Then la pagina debe contener el texto "Thank you for your comments."
+    # 5. VERIFICACIÓN: Comprobar el resultado
+    Then la pagina debe contener el texto "Thank you for your comments"

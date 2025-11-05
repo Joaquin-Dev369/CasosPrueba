@@ -1,27 +1,27 @@
 package AutoEVA2.steps;
-// Imports de Selenium y WebDriverManager
+
+// === Imports de Selenium y WebDriverManager ===
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.Alert; // Import para la Alerta
+import org.openqa.selenium.support.ui.Select; // Import para el Dropdown
 
-// Imports de Cucumber
+// === Imports de Cucumber ===
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 
-// Import de Assert (para verificar)
+// === Imports de JUnit ===
 import org.junit.Assert;
-
-// Import para el tiempo de espera (Duration)
-import java.time.Duration;
-
 import static org.junit.Assert.assertEquals;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.support.ui.Select;
+
+// === Otros ===
+import java.time.Duration;
 
 public class TransferenciaSteps {
 
@@ -51,7 +51,9 @@ public class TransferenciaSteps {
         // Borra cookies
         driver.manage().deleteAllCookies();
 
-        //espera hasta 10 segundos si no encuentra un elemento.
+        // ¡¡ESTA LÍNEA ES LA CLAVE!!
+        // Le dice a Selenium que espere hasta 10 segundos por CUALQUIER
+        // elemento antes de fallar. Esto soluciona los problemas de tiempo.
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
 
@@ -63,7 +65,6 @@ public class TransferenciaSteps {
         }
     }
 
-
     @Given("al navegar hasta la url {string}")
     public void al_navegar_hasta_la_url(String url) {
         driver.get(url);
@@ -71,11 +72,13 @@ public class TransferenciaSteps {
 
     @When("hacemos click en el link {string}")
     public void hacemos_click_en_el_link(String xpath) {
+        // La espera implícita esperará aquí si el link no ha cargado
         driver.findElement(By.xpath(xpath)).click();
     }
 
     @When("coloca en el campo usuario {string} el texto {string}")
     public void coloca_en_el_campo_usuario_el_texto(String xpath, String username) {
+        // La espera implícita esperará aquí
         driver.findElement(By.xpath(xpath)).click();
         driver.findElement(By.xpath(xpath)).clear();
         driver.findElement(By.xpath(xpath)).sendKeys(username);
@@ -83,6 +86,7 @@ public class TransferenciaSteps {
 
     @When("coloca en el campo password {string} el texto {string}")
     public void coloca_en_el_campo_password_el_texto(String xpath, String password) {
+        // La espera implícita esperará aquí
         driver.findElement(By.xpath(xpath)).click();
         driver.findElement(By.xpath(xpath)).clear();
         driver.findElement(By.xpath(xpath)).sendKeys(password);
@@ -90,18 +94,21 @@ public class TransferenciaSteps {
 
     @When("hacer click sobre el boton Login {string}")
     public void hacer_click_sobre_el_boton_login(String xpath) {
+        // La espera implícita esperará aquí
         driver.findElement(By.xpath(xpath)).click();
     }
 
     @Then("la pagina debe contener el texto {string}")
     public void la_pagina_debe_contener_el_texto(String textoEsperado) {
+        // Agregamos una pequeña pausa de 1 seg solo para asegurar
+        // que el texto dinámico se refresque después de una acción.
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        // Obtenemos tod0 el texto del cuerpo de la página
+        // La espera implícita esperará a que el "body" exista
         String bodyText = driver.findElement(By.tagName("body")).getText();
 
         // Verificamos si el texto esperado está en la página
@@ -109,51 +116,37 @@ public class TransferenciaSteps {
                 "Verificación fallida: El texto '" + textoEsperado + "' NO se encontró en la página.",
                 bodyText.contains(textoEsperado)
         );
-
     }
+
     @Then("La pagina deve mostrar el aviso {string}")
     public void la_pagina_deve_mostrar_el_aviso(String textoEsperado) {
         String textoActual = closeAlertAndGetItsText(); //obtenemos el texto
-
         assertEquals(textoEsperado, textoActual); //lo comparamos con texto esperado
     }
 
     @When("seleccionamos en el dropdown {string} el texto visible {string}")
     public void seleccionamos_en_el_dropdown_el_texto_visible(String xpath, String textoVisible) {
-        // Encontramos el elemento Select (el dropdown)
+        // La espera implícita esperará a que el dropdown exista
         Select dropdown = new Select(driver.findElement(By.xpath(xpath)));
-
-        // Seleccionamos la opción usando el texto visible
         dropdown.selectByVisibleText(textoVisible);
     }
 
+    // ==================== MÉTODOS AUXILIARES ====================
+
     private String closeAlertAndGetItsText() {
         try {
-            // 1. Esperar un poco a que la alerta aparezca (Opcional pero recomendado)
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            // Pausa "tonta" para esperar que la alerta aparezca
+            Thread.sleep(1000);
 
-
-            // 2. Cambiar el foco del driver a la alerta
+            // Cambiar el foco del driver a la alerta
             Alert alert = driver.switchTo().alert();
-
-            // 3. Obtener el texto de la alerta
             String alertText = alert.getText();
-
-            // 4. Aceptar la alerta (presionar OK)
-            alert.accept(); // O usa alert.dismiss() si quieres cancelarla
-
-            // 5. Devolver el texto que leíste
+            alert.accept();
             return alertText;
 
         } catch (Exception e) {
-            // Manejar el caso de que no haya ninguna alerta
-            System.out.println("No se encontró ninguna alerta: " + e.getMessage());
+            Assert.fail("No se encontró ninguna alerta: " + e.getMessage());
             return null;
         }
     }
-
 }

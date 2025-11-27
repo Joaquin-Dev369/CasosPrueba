@@ -24,11 +24,11 @@ Feature: Transferencias Masivas desde Excel
     # 5. Validar si el mensaje coincide con lo esperado en el Excel
     Then El mensaje de resultados debe contener un mensaje de ingreso <fila>
 
-    # 6. Cerrar sesion para limpiar antes de la siguiente fila (opcional pero recomendado)
+    # 6. Cerrar sesion para limpiar antes de la siguiente fila
     And hacemos click en el link "//*[@id='LoginLink']/font"
 
     Examples:
       | fila |
-      | 1    |
       | 2    |
       | 3    |
+      | 4    |

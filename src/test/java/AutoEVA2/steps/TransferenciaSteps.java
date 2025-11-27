@@ -20,7 +20,6 @@ public class TransferenciaSteps {
 
     // --- MÉTODOS AUXILIARES ---
 
-    // Método para limpiar alertas residuales si las hubiera
     private void manejarAlertaSiExiste() {
         try {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofMillis(500));
@@ -41,13 +40,12 @@ public class TransferenciaSteps {
         driver = Hooks.getDriver();
         driver.get(url);
 
-        // Cargar Excel por defecto para evitar errores si se olvida
         try {
             String projectPath = System.getProperty("user.dir");
             String excelPath = projectPath + File.separator + "testData" + File.separator + "data.xlsx";
             ExcelUtils.setExcelFileSheet(excelPath, "DataLogin");
         } catch (Exception e) {
-            System.out.println("Aviso: No se pudo precargar el Excel (normal si no existe el archivo aun).");
+            System.out.println("Aviso: No se pudo precargar el Excel.");
         }
         Utility.captureScreenShot(driver, "evidencias/Navegacion.png");
     }
@@ -57,7 +55,7 @@ public class TransferenciaSteps {
         try {
             driver.findElement(By.xpath(xpath)).click();
         } catch (UnhandledAlertException e) {
-            driver.switchTo().alert().accept(); // Aceptar alerta bloqueante anterior
+            driver.switchTo().alert().accept();
             driver.findElement(By.xpath(xpath)).click();
         }
     }
@@ -78,14 +76,12 @@ public class TransferenciaSteps {
     public void hacer_click_sobre_el_boton_login(String xpath) throws Exception {
         driver.findElement(By.xpath(xpath)).click();
 
-        // CORRECCIÓN CLAVE: Verificamos si salió una alerta ANTES de intentar la foto.
-        // Si hay alerta, NO tomamos foto para no romper el test.
         try {
             WebDriverWait waitShort = new WebDriverWait(driver, Duration.ofMillis(800));
             waitShort.until(ExpectedConditions.alertIsPresent());
-            System.out.println("Alerta detectada tras el click. Se omite foto para permitir validación en el siguiente paso.");
+            System.out.println("Alerta detectada tras el click (Correcto para pruebas negativas).");
         } catch (TimeoutException e) {
-            // No hay alerta, es seguro tomar la foto
+            // Solo tomamos foto si NO hay alerta, para no bloquear el driver
             Utility.captureScreenShot(driver, "evidencias/Click_Boton_" + System.currentTimeMillis() + ".png");
         }
     }
@@ -94,14 +90,13 @@ public class TransferenciaSteps {
     public void seleccionamos_en_el_dropdown_el_texto_visible(String xpath, String textoVisible) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-
         Select dropdown = new Select(driver.findElement(By.xpath(xpath)));
         dropdown.selectByVisibleText(textoVisible);
     }
 
     @Then("la pagina debe contener el texto {string}")
     public void la_pagina_debe_contener_el_texto(String textoEsperado) {
-        manejarAlertaSiExiste(); // Limpiamos alertas previas que estorben
+        manejarAlertaSiExiste();
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         try {
@@ -114,15 +109,24 @@ public class TransferenciaSteps {
 
     @Then("La pagina deve mostrar el aviso {string}")
     public void la_pagina_deve_mostrar_el_aviso(String textoEsperado) {
+        Alert alert = null;
         try {
+            // Intentamos esperar la alerta
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
             wait.until(ExpectedConditions.alertIsPresent());
-            Alert alert = driver.switchTo().alert();
+            alert = driver.switchTo().alert();
+        } catch (UnhandledAlertException e) {
+            // ¡AJÁ! Si Selenium se queja de que hay una alerta sin manejar, es porque LA HAY.
+            // La capturamos aquí.
+            alert = driver.switchTo().alert();
+        } catch (Exception e) {
+            Assert.fail("No apareció la alerta esperada: " + textoEsperado);
+        }
+
+        if (alert != null) {
             String alertText = alert.getText();
             alert.accept();
             Assert.assertEquals(textoEsperado, alertText);
-        } catch (Exception e) {
-            Assert.fail("No apareció la alerta esperada: " + textoEsperado);
         }
     }
 
@@ -135,31 +139,30 @@ public class TransferenciaSteps {
         String usuario = ExcelUtils.getCellData(fila, 0);
         String pass = ExcelUtils.getCellData(fila, 1);
 
-        System.out.println("LOG DEBUG - Fila: " + fila + " | Usuario leido: " + usuario); // Para depurar
+        System.out.println("LOG DEBUG - Fila: " + fila + " | Usuario leido: " + usuario);
 
-        if(usuario == null || usuario.isEmpty()) return;
+        // Protección contra filas vacías
+        if(usuario == null || usuario.trim().isEmpty()) {
+            System.out.println("Fila vacía o inválida, saltando...");
+            return;
+        }
 
         driver.findElement(By.id("uid")).clear();
         driver.findElement(By.id("uid")).sendKeys(usuario);
         driver.findElement(By.id("passw")).clear();
         driver.findElement(By.id("passw")).sendKeys(pass);
-
-        try { Utility.captureScreenShot(driver, "evidencias/Excel_Login_" + fila + ".png"); } catch (Exception e) {}
     }
 
     @When("Indicar la cuenta de cargo en From Account {int}")
     public void indicar_cuenta_cargo_desde_excel(Integer fila) throws Exception {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        By dropdownLocator = By.id("fromAccount");
-
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(dropdownLocator));
-            Select fromAccount = new Select(driver.findElement(dropdownLocator));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("fromAccount")));
+            Select fromAccount = new Select(driver.findElement(By.id("fromAccount")));
             String cuentaOrigen = ExcelUtils.getCellData(fila, 2);
             fromAccount.selectByVisibleText(cuentaOrigen);
-        } catch (TimeoutException e) {
-            System.err.println("ERROR: No se encontró el menú de cuentas. Probablemente el LOGIN falló previamente.");
-            // No lanzamos error fatal para dejar que el reporte registre el fallo más adelante
+        } catch (Exception e) {
+            System.err.println("No se pudo seleccionar cuenta origen (Posible fallo login previo).");
         }
     }
 
@@ -184,19 +187,11 @@ public class TransferenciaSteps {
     @Then("El mensaje de resultados debe contener un mensaje de ingreso {int}")
     public void verificar_resultado_y_escribir_excel(Integer fila) throws Exception {
         String mensajeEsperado = ExcelUtils.getCellData(fila, 5);
-        if(mensajeEsperado.isEmpty()) return;
+        if(mensajeEsperado == null || mensajeEsperado.isEmpty()) return;
 
         String mensajeActual = "";
         try {
-            // Verificamos si hay alerta primero (común en casos de error)
-            try {
-                Alert alert = driver.switchTo().alert();
-                mensajeActual = alert.getText();
-                alert.accept();
-            } catch (NoAlertPresentException e) {
-                // Si no hay alerta, buscamos en el cuerpo
-                mensajeActual = driver.findElement(By.tagName("body")).getText();
-            }
+            mensajeActual = driver.findElement(By.tagName("body")).getText();
         } catch (Exception e) {
             mensajeActual = "Error leyendo página";
         }
@@ -205,9 +200,8 @@ public class TransferenciaSteps {
             System.out.println("Excel Fila " + fila + ": OK");
             ExcelUtils.setCellData("Prueba OK", fila, 6);
         } else {
-            System.out.println("Excel Fila " + fila + ": FALLO. Esperado: '" + mensajeEsperado + "' vs Actual: '" + mensajeActual + "'");
+            System.out.println("Excel Fila " + fila + ": FALLO. Buscaba '" + mensajeEsperado + "'");
             ExcelUtils.setCellData("Prueba NO OK", fila, 6);
-            // Fallamos el test para que salga rojo en el reporte
             Assert.fail("Fallo validación Excel fila " + fila);
         }
     }

@@ -1,75 +1,121 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>cl.micodev.dpringcloud.msvc</groupId>
-  <artifactId>AltoroMutual</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+    <groupId>cl.micodev.dpringcloud.msvc</groupId>
+    <artifactId>AltoroMutual</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-  <name>AltoroMutual</name>
-  <url>http://maven.apache.org</url>
+    <name>AltoroMutual</name>
+    <url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Aquí van las dependencias -->
-      <dependency>
-          <groupId>io.cucumber</groupId>
-          <artifactId>cucumber-java</artifactId>
-          <version>7.15.0</version>
-          <scope>test</scope>
-      </dependency>
+    <dependencies>
+        <!-- JUnit 4 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
 
-      <dependency>
-          <groupId>io.cucumber</groupId>
-          <artifactId>cucumber-junit-platform-engine</artifactId>
-          <version>7.15.0</version>
-          <scope>test</scope>
-      </dependency>
+        <!-- Cucumber Java -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>7.15.0</version>
+            <scope>test</scope>
+        </dependency>
 
-      <dependency>
-          <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-java</artifactId>
-          <version>4.21.0</version>
-          <scope>test</scope>
-      </dependency>
+        <!-- Cucumber JUnit Runner -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>7.15.0</version>
+            <scope>test</scope>
+        </dependency>
 
-      <dependency>
-          <groupId>io.github.bonigarcia</groupId>
-          <artifactId>webdrivermanager</artifactId>
-          <version>5.8.0</version>
-          <scope>test</scope>
-      </dependency>
+        <!-- Selenium (CORREGIDO: Versión compatible con Java 8) -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.5.3</version>
+            <scope>test</scope>
+        </dependency>
 
-      <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-simple</artifactId>
-          <version>2.0.9</version>
-      </dependency>
+        <!-- WebDriver Manager -->
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>5.8.0</version>
+            <scope>test</scope>
+        </dependency>
 
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.9</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-      <dependency>
-          <groupId>org.junit.jupiter</groupId>
-          <artifactId>junit-jupiter</artifactId>
-          <version>5.10.2</version>
-          <scope>test</scope>
-      </dependency>
+    <build>
+        <plugins>
+            <!-- Plugin de Compilación -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
 
-      <dependency>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-suite</artifactId>
-          <version>1.10.2</version>
-          <scope>test</scope>
-      </dependency>
+            <!-- Plugin para ejecutar Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <includes>
+                        <include>**/RunCucumberTest.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
 
-  </dependencies>
+            <!-- Plugin para Reportes Gráficos (Masterthought) -->
+            <plugin>
+                <groupId>net.masterthought</groupId>
+                <artifactId>maven-cucumber-reporting</artifactId>
+                <version>5.7.5</version>
+                <executions>
+                    <execution>
+                        <id>execution</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <projectName>Altoro Mutual - Evaluación 3</projectName>
+                            <outputDirectory>${project.build.directory}/reporte-html-final</outputDirectory>
+                            <inputDirectory>${project.build.directory}</inputDirectory>
+                            <jsonFiles>
+                                <param>**/cucumber.json</param>
+                            </jsonFiles>
+                            <checkBuildResult>false</checkBuildResult>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

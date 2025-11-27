@@ -9,7 +9,6 @@ Feature: Autenticación de Usuario
     And coloca en el campo password "//*[@id='passw']" el texto "Demo1234"
     And hacer click sobre el boton Login "//*[@name='btnSubmit']"
 
-    # ¡ARREGLO! Verificamos el texto que SÍ aparece
     Then la pagina debe contener el texto "Hello John Smith"
 
   Scenario: Intento de inicio de sesión con contraseña incorrecta

@@ -116,8 +116,7 @@ public class TransferenciaSteps {
             wait.until(ExpectedConditions.alertIsPresent());
             alert = driver.switchTo().alert();
         } catch (UnhandledAlertException e) {
-            // ¡AJÁ! Si Selenium se queja de que hay una alerta sin manejar, es porque LA HAY.
-            // La capturamos aquí.
+
             alert = driver.switchTo().alert();
         } catch (Exception e) {
             Assert.fail("No apareció la alerta esperada: " + textoEsperado);

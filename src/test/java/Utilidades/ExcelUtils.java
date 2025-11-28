@@ -13,7 +13,7 @@ public class ExcelUtils {
     private static XSSFWorkbook ExcelWBook;
     private static XSSFCell Cell;
     private static XSSFRow Row;
-    private static String FilePath; // Guardamos la ruta para guardar después
+    private static String FilePath;
 
     // 1. Configurar la ruta del archivo y la hoja
     public static void setExcelFileSheet(String Path, String SheetName) throws Exception {
